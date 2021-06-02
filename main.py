@@ -114,7 +114,7 @@ model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
 if not TRAIN_MODEL:
     saved_model = load_model('saved_model/bact_seg_10_epoch_v1.h5', compile=False)
     image_index = 14
-    predict_mask_and_plot(saved_model, val_images[image_index], val_masks[image_index])
+    predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer="rmsprop", loss=tversky_loss,
@@ -168,5 +168,5 @@ loss = history.history['loss']
 # plt.legend()
 # plt.show()
 
-predict_mask_and_plot(val_images[13], val_masks[13], history)
+predict_mask_and_plot(val_images[13], val_masks[13], model)
 

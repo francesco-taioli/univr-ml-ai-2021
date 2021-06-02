@@ -168,7 +168,7 @@ def mean_IoU(y_true, y_pred):
     return IoU_mean / number_items_in_batches
 
 
-def predict_mask_and_plot(img, mask, model, epoch=0, save=0):
+def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     image = np.reshape(img / 255., newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255.
 
     pred = model.predict(image)
@@ -184,7 +184,7 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=0):
     axs[0].imshow(img), axs[0].set_title('Original Image')
     axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
     axs[2].imshow(f), axs[2].set_title('Pred mask epoch {}'.format(epoch))
-    if save == 1:
+    if save:
         plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', 'epoch{}.png'.format(epoch)))
     else:
         plt.show()
@@ -199,4 +199,4 @@ class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         keys = list(logs.keys())
         print("End epoch {} of training; got log keys: {}".format(epoch, keys))
-        predict_mask_and_plot(self.image, self.mask, self.model, epoch, save=1)
+        predict_mask_and_plot(self.image, self.mask, self.model, epoch, save=True)
