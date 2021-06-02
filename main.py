@@ -5,11 +5,15 @@ import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset
 from models_utils import Unet, tversky_loss, mean_IoU
+import os
+
 WIDTH = 256
 HEIGHT = 256
 
 download_dataset()
-create_train_validation_set()
+
+if 'set_imgs' not in os.listdir("dataset") or 'set_masks' not in os.listdir("dataset"):
+ create_train_validation_set()
 
 #open the sets
 with open('dataset/set_imgs', 'rb') as ts:

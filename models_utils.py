@@ -2,7 +2,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
-import keras.backend as K
+import tensorflow.keras.backend as K
+from utils import get_env_variable
 
 def tversky_loss(y_true, y_pred):
     alpha = 0.5
@@ -132,7 +133,7 @@ def mean_IoU(y_true, y_pred):
     Implementation of the MeanIou
     '''
     number_classes = 3
-    print("Sto printando: {}".format(y_true.shape)) #(8, 256, 256, 3)
+    # print(y_true.shape) #(8, 256, 256, 3)
     # print(y_pred.shape) #(8, 256, 256, 3)
 
     eps = 1e-6
@@ -141,7 +142,7 @@ def mean_IoU(y_true, y_pred):
     for b in range(number_items_in_batches):
         IoU_channel = 0
         pred = np.argmax(y_pred[b, :, :], axis=-1)
-        mask_pred = np.zeros((HEIGHT, WIDTH, 3), dtype=int)
+        mask_pred = np.zeros((int(get_env_variable('HEIGHT')), int(get_env_variable('WIDTH')), 3), dtype=int)
         for c in range(number_classes):
             # create mask
             mask_pred[:, :, c] = pred == c
