@@ -5,8 +5,6 @@ import os
 import configparser
 
 
-WIDTH = 256
-HEIGHT = 256
 
 def get_env_variable(var):
     '''
@@ -39,7 +37,7 @@ def create_layer_of_color(mask):
     For the processing, we need this object as one hot encode in three different layer
     '''
     img = np.asarray(mask)
-    tmp = np.zeros((HEIGHT, WIDTH, 3), dtype=int)
+    tmp = np.zeros(( int(get_env_variable('HEIGHT')), int(get_env_variable('WIDTH')), 3), dtype=int)
 
     tmp[:, :, 0] = img == 0
     tmp[:, :, 1] = img == 1
@@ -61,7 +59,7 @@ def create_train_validation_set():
     masks = []
     for image_name in list_imgs:
         image = cv2.imread(os.path.join(path_imgs, image_name))
-        image = cv2.resize(image, (HEIGHT, WIDTH))
+        image = cv2.resize(image, (int(get_env_variable('HEIGHT')), int(get_env_variable('WIDTH'))))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         # image = clahe.apply(image)
@@ -69,7 +67,7 @@ def create_train_validation_set():
 
         # find the mask and append it
         mask = cv2.imread(os.path.join(path_masks, image_name))
-        mask = cv2.resize(mask, (HEIGHT, WIDTH))
+        mask = cv2.resize(mask, (int(get_env_variable('HEIGHT')), int(get_env_variable('WIDTH'))))
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         # masks.append(np.around(tf.keras.utils.to_categorical(mask, 3)))
         masks.append(create_layer_of_color(mask))

@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from augmentation import augment
-from utils import create_train_validation_set, download_dataset
+from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import Unet, tversky_loss, mean_IoU
 import os
 
-WIDTH = 256
-HEIGHT = 256
+
+WIDTH =  int(get_env_variable('WIDTH'))
+HEIGHT = int(get_env_variable('HEIGHT'))
 
 download_dataset()
 
