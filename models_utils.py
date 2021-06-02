@@ -4,6 +4,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
 from utils import get_env_variable
+import matplotlib.pyplot as plt
+import os
 
 def tversky_loss(y_true, y_pred):
     alpha = 0.5
@@ -164,3 +166,37 @@ def mean_IoU(y_true, y_pred):
             IoU_channel += true_positive / (true_positive + false_positive + false_negative + eps)
         IoU_mean += IoU_channel / number_classes
     return IoU_mean / number_items_in_batches
+
+
+def predict_mask(img, mask, model, epoch=0, save=0):
+    image = np.reshape(img / 255., newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255.
+
+    pred = model.predict(image)
+
+    res = np.argmax(pred[0], axis=-1)
+    f = np.zeros((256, 256, 3))
+    f[:, :, 0] = res == 0
+    f[:, :, 1] = res == 1
+    f[:, :, 2] = res == 2
+
+    fig, axs = plt.subplots(1, 3)
+    fig.set_size_inches(20, 6)
+    axs[0].imshow(img), axs[0].set_title('Original Image')
+    axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
+    axs[2].imshow(f), axs[2].set_title('Pred mask epoch {}'.format(epoch))
+    if save == 1:
+        plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', 'epoch{}.png'.format(epoch)))
+    else:
+        plt.show()
+
+
+class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
+
+    def __init__(self, image, mask):
+        self.image = image
+        self.mask = mask
+
+    def on_epoch_end(self, epoch, logs=None):
+        keys = list(logs.keys())
+        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
+        predict_mask(self.image, self.mask, self.model, epoch, save=1)

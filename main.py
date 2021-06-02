@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset
-from models_utils import Unet, tversky_loss, mean_IoU
+from models_utils import Unet, tversky_loss, mean_IoU, predict_mask, Show_Intermediate_Pred
 import os
 
 WIDTH = 256
@@ -79,7 +79,7 @@ mask_generator = mask_datagen.flow(
 train_generator = (pair for pair in zip(image_generator, mask_generator))
 
 generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale= 1.0 /255.)
-val_generator = generator.flow(val_images, val_masks)
+val_generator = generator.flow(val_images, val_masks, batch_size=8)
 
 x, y = next(train_generator)
 plt.imshow(x[0]), plt.show()
@@ -106,7 +106,10 @@ model.compile(optimizer="rmsprop", loss=tversky_loss,
               # loss_weights=loss_mod
               )
 
+
+
 callbacks = [
+    Show_Intermediate_Pred(val_images[13], val_masks[13])
     # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
     # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
     # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15)
@@ -114,7 +117,7 @@ callbacks = [
 
 # Train the model, doing validation at the end of each epoch.
 
-epochs = 20
+epochs = 30
 
 # history = model.fit(
 #           x=train_images,
@@ -132,7 +135,7 @@ history = model.fit(
     # class_weight=classes_weights
 )
 
-acc = history.history['acc']
+acc = history.history['accuracy']
 # val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 # val_loss = history.history['val_loss']
@@ -150,25 +153,5 @@ loss = history.history['loss']
 # plt.legend()
 # plt.show()
 
-
-def predict_mask(index):
-  img, mask = val_images[index], val_masks[index]
-  image = np.reshape(img / 255., newshape=(1, img.shape[0], img.shape[1], img.shape[2])) #/ 255.
-
-  pred = model.predict(image)
-
-  res = np.argmax(pred[0], axis=-1)
-  f = np.zeros((256, 256, 3))
-  f[:, :, 0] = res == 0
-  f[:, :, 1] = res == 1
-  f[:, :, 2] = res == 2
-
-  fig, axs = plt.subplots(1, 3)
-  fig.set_size_inches(20,6)
-  axs[0].imshow(img), axs[0].set_title('Original Image')
-  axs[1].imshow(mask*255), axs[1].set_title('True Mask')
-  axs[2].imshow(f), axs[2].set_title('Pred mask')
-  plt.show()
-
-predict_mask(13)
+predict_mask(val_images[13], val_masks[13], history)
 
