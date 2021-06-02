@@ -6,7 +6,7 @@ from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot,  Show_Intermediate_Pred
 import os
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 # ##############
 # Settings
@@ -168,5 +168,5 @@ loss = history.history['loss']
 # plt.legend()
 # plt.show()
 
-predict_mask(val_images[13], val_masks[13], history)
+predict_mask_and_plot(val_images[13], val_masks[13], history)
 
