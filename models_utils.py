@@ -4,6 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 import tensorflow.keras.backend as K
 from utils import get_env_variable
+import matplotlib.pyplot as plt
 
 def tversky_loss(y_true, y_pred):
     alpha = 0.5
@@ -164,3 +165,22 @@ def mean_IoU(y_true, y_pred):
             IoU_channel += true_positive / (true_positive + false_positive + false_negative + eps)
         IoU_mean += IoU_channel / number_classes
     return IoU_mean / number_items_in_batches
+
+def predict_mask_and_plot(model, image, true_mask):
+    img, mask = image, true_mask
+    image = np.reshape(img / 255., newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255. todo check if it is scaled or not
+
+    pred = model.predict(image)
+
+    pred = np.argmax(pred[0], axis=-1)
+    predicted_mask = np.zeros((256, 256, 3))
+    predicted_mask[:, :, 0] = pred == 0
+    predicted_mask[:, :, 1] = pred == 1
+    predicted_mask[:, :, 2] = pred == 2
+
+    fig, axs = plt.subplots(1, 3)
+    fig.set_size_inches(20, 6)
+    axs[0].imshow(img), axs[0].set_title('Original Image')
+    axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
+    axs[2].imshow(predicted_mask), axs[2].set_title('Pred mask')
+    plt.show()
