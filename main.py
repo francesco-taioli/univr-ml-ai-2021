@@ -3,30 +3,42 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from augmentation import augment
-from utils import create_train_validation_set, download_dataset
-from models_utils import Unet, tversky_loss, mean_IoU, predict_mask, Show_Intermediate_Pred
+from utils import create_train_validation_set, download_dataset, get_env_variable
+from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot,  Show_Intermediate_Pred
 import os
+from keras.models import load_model
 
-WIDTH = 256
-HEIGHT = 256
+# ##############
+# Settings
+# ##############
+WIDTH = int(get_env_variable('WIDTH'))
+HEIGHT = int(get_env_variable('HEIGHT'))
+NUM_CLASSES = 3
+EPOCHS = 20
+TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 
+
+# ##############
+# download dataset and prepare it
+# ##############
 download_dataset()
-
 if 'set_imgs' not in os.listdir("dataset") or 'set_masks' not in os.listdir("dataset"):
- create_train_validation_set()
+    create_train_validation_set()
 
-#open the sets
+# open the sets
 with open('dataset/set_imgs', 'rb') as ts:
     imgs = pickle.load(ts)
 
 with open('dataset/set_masks', 'rb') as ts:
     masks = pickle.load(ts)
 
+# ##############
 # create the train (and validation) masks and images
+# ##############
 how_many_training_sample = 330
 train_images = imgs[0:how_many_training_sample, :, :, :]
 train_masks = masks[0:how_many_training_sample, :, :, :]
-val_images = imgs[how_many_training_sample :, :, :, :]
+val_images = imgs[how_many_training_sample:, :, :, :]
 val_masks = masks[how_many_training_sample:, :, :, :]
 
 print(f"Total images: {len(imgs)}")
@@ -35,36 +47,34 @@ print(f"[Split mask and image - Val  ] => Val Image {val_images.shape} Val Mask:
 
 # plot some examples
 fig, axs = plt.subplots(1, 5)
-fig.set_size_inches(20,6)
+fig.set_size_inches(20, 6)
 axs[0].imshow(train_images[0]), axs[0].set_title('Original Image')
 axs[1].imshow(train_masks[0] * 255), axs[1].set_title('Mask [Bg + cell + bact]')
 axs[2].imshow(train_masks[0, :, :, 1]), axs[2].set_title('blood cell')
 axs[3].imshow(train_masks[0, :, :, 2]), axs[3].set_title('bacteria')
 axs[4].imshow(train_masks[0, :, :, 0]), axs[4].set_title('Background')
 
-
-
+# ##############
+# Data Augmentation
+# ##############
 # we create two instances with the same arguments
-data_gen_args = dict(# featurewise_center=True,
-                     # featurewise_std_normalization=True,
-                     # rotation_range=90.,
-                     # width_shift_range=0.1,
-                     # height_shift_range=0.1,
-                     # zoom_range=0.2
-                     horizontal_flip=True,
-                     vertical_flip=True
-                     )
+data_gen_args = dict(  # featurewise_center=True,
+    # featurewise_std_normalization=True,
+    # rotation_range=90.,
+    # width_shift_range=0.1,
+    # height_shift_range=0.1,
+    # zoom_range=0.2
+    horizontal_flip=True,
+    vertical_flip=True
+)
 image_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**data_gen_args,
-                                                                rescale= 1.0 /255.,
+                                                                rescale=1.0 / 255.,
                                                                 preprocessing_function=augment
                                                                 )
 mask_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**data_gen_args)
 
 # Provide the same seed and keyword arguments to the fit and flow methods
 seed = 1
-# image_datagen.fit(train_images, augment=True, seed=seed)
-# mask_datagen.fit(train_masks, augment=True, seed=seed)
-
 image_generator = image_datagen.flow(
     train_images,
     seed=seed,
@@ -76,36 +86,41 @@ mask_generator = mask_datagen.flow(
     batch_size=8)
 
 # combine generators into one which yields image and masks
+# train
 train_generator = (pair for pair in zip(image_generator, mask_generator))
+# validation
+generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1.0 / 255.)
+val_generator = generator.flow(val_images, val_masks)
 
-generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale= 1.0 /255.)
-val_generator = generator.flow(val_images, val_masks, batch_size=8)
+# x, y = next(train_generator)
+# plt.imshow(x[0]), plt.show()
+# plt.imshow(y[0]), plt.show()
+#
+# print(np.unique(y[0]), y[0].shape, np.max(x))
+#tf.keras.backend.clear_session()
 
-x, y = next(train_generator)
-plt.imshow(x[0]), plt.show()
-plt.imshow(y[0]), plt.show()
 
-print(np.unique(y[0]), y[0].shape, np.max(x))
-
-tf.keras.backend.clear_session()
-
-# Build model
-num_classes = 3
+# ##############
+# Model Section
+# ##############
 # model = get_model((HEIGHT,WIDTH), num_classes)
-model = Unet(HEIGHT, WIDTH, num_classes)
+model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
 # model.summary()
 # loss_weights = {0: 0.01, 1: 0.5, 2: 0.5}
 # w = [[loss_weights[0], loss_weights[1], loss_weights[2]]] * WIDTH
 # h = [w] * HEIGHT
 # loss_mod = np.array(h)
 
-
-tf.config.experimental_run_functions_eagerly(True)
-model.compile(optimizer="rmsprop", loss=tversky_loss,
-              metrics=['accuracy', tversky_loss, mean_IoU]
-              # loss_weights=loss_mod
-              )
-
+if not TRAIN_MODEL:
+    saved_model = load_model('saved_model/bact_seg_10_epoch_v1.h5', compile=False)
+    image_index = 14
+    predict_mask_and_plot(saved_model, val_images[image_index], val_masks[image_index])
+else:
+    tf.config.experimental_run_functions_eagerly(True)
+    model.compile(optimizer="rmsprop", loss=tversky_loss,
+                  metrics=['accuracy', tversky_loss, mean_IoU]
+                  # loss_weights=loss_mod
+                  )
 
 
 callbacks = [
