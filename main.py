@@ -64,8 +64,8 @@ data_gen_args = dict(  # featurewise_center=True,
     # width_shift_range=0.1,
     # height_shift_range=0.1,
     # zoom_range=0.2
-    horizontal_flip=True,
-    vertical_flip=True
+    horizontal_flip=True, # Randomly flip inputs horizontally.
+    vertical_flip=True # Randomly flip inputs vertically.
 )
 image_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**data_gen_args,
                                                                 rescale=1.0 / 255.,
