@@ -201,6 +201,4 @@ class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
         self.mask = mask
 
     def on_epoch_end(self, epoch, logs=None):
-        keys = list(logs.keys())
-        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
         predict_mask_and_plot(self.image, self.mask, self.model, epoch, save=True)

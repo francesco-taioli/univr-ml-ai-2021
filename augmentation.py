@@ -6,7 +6,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def augment(image, prob=0.5):
+def augment(image, prob=0.2):
     """
     :param image: rgb image (dtype uint8)
     :return: augmented image (dtype uint8)
@@ -16,8 +16,8 @@ def augment(image, prob=0.5):
         A.RandomContrast(p=prob),
         A.RandomGamma(p=prob),
         A.HueSaturationValue(p=prob),
-        A.GaussNoise(p=prob),
-        A.CLAHE(p=prob)
+        A.GaussNoise(p=prob)
+        #A.CLAHE(p=prob)
     ])
 
     transformed = transform(image=image)

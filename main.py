@@ -127,7 +127,7 @@ else:
 
     # Train the model, doing validation at the end of each epoch.
 
-    epochs = 30
+    epochs = 15
 
     # history = model.fit(
     #           x=train_images,
@@ -141,14 +141,14 @@ else:
         epochs=epochs,
         callbacks=callbacks,
         # validation_data=val_generator,
-        steps_per_epoch=60
+        steps_per_epoch=40
         # class_weight=classes_weights
     )
 
     # datetime object containing current date and time
     # dd/mm/YY H:M:S
     now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
     if SAVED_MODEL:
         model.save(os.path.join("saved_model", "model"+dt_string+".h5"))
