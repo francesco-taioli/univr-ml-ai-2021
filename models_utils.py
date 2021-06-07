@@ -186,7 +186,7 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     axs[0].imshow(img), axs[0].set_title('Original Image')
     axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
     axs[2].imshow(f), axs[2].set_title('Pred mask epoch {}'.format(epoch))
-    axs[3].imshow(cv2.addWeighted(img,0.4, np.asarray(mask * 255).astype(np.uint8),0.3,0)), axs[3].set_title('Overlay')
+    axs[3].imshow(cv2.addWeighted(img,0.4, np.asarray(f * 255).astype(np.uint8),0.3,0)), axs[3].set_title('Overlay')
 
     if save:
         plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', 'epoch{}.png'.format(epoch)))
