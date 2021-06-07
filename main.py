@@ -16,7 +16,7 @@ HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
 EPOCHS = 20
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
-
+BATCH_SIZE = 8
 
 # ##############
 # download dataset and prepare it
@@ -58,32 +58,24 @@ axs[4].imshow(train_masks[0, :, :, 0]), axs[4].set_title('Background')
 # Data Augmentation
 # ##############
 # we create two instances with the same arguments
-data_gen_args = dict(  # featurewise_center=True,
-    # featurewise_std_normalization=True,
-    # rotation_range=90.,
-    # width_shift_range=0.1,
-    # height_shift_range=0.1,
-    # zoom_range=0.2
-    horizontal_flip=True, # Randomly flip inputs horizontally.
-    vertical_flip=True # Randomly flip inputs vertically.
+
+# here we use ImageDataGenerator with the data_gen_args only for flip vertically and horizontally the
+# image and mask. For the complete augmentation, see augment function (preprocessing one)
+data_gen_args = dict(
+    horizontal_flip=True,  # Randomly flip inputs horizontally.
+    vertical_flip=True  # Randomly flip inputs vertically.
 )
 image_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**data_gen_args,
                                                                 rescale=1.0 / 255.,
-                                                                preprocessing_function=augment
-                                                                )
+                                                                preprocessing_function=augment)
 mask_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**data_gen_args)
 
 # Provide the same seed and keyword arguments to the fit and flow methods
+# in this way we are sure that both image and mask are vertically or horizontally flip together
 seed = 1
-image_generator = image_datagen.flow(
-    train_images,
-    seed=seed,
-    batch_size=8)
+image_generator = image_datagen.flow(train_images, seed=seed, batch_size=BATCH_SIZE)
 
-mask_generator = mask_datagen.flow(
-    train_masks,
-    seed=seed,
-    batch_size=8)
+mask_generator = mask_datagen.flow(train_masks, seed=seed, batch_size=BATCH_SIZE)
 
 # combine generators into one which yields image and masks
 # train
