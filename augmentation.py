@@ -26,7 +26,7 @@ def augment(image, prob=0.2):
 
     return image
 
-# Showing how the augmentation is done (5 images augmented with their original counterparts
+# Showing how the augmentation is done (5 images augmented with their original counterparts)
 if __name__ == "__main__":
 
     with open(os.path.join('dataset', 'set_imgs'), 'rb') as imgs:
