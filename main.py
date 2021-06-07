@@ -116,57 +116,58 @@ if not TRAIN_MODEL:
     image_index = 14
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
+
+    #### HERE WE TRAIN THE MODEL
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer="rmsprop", loss=tversky_loss,
                   metrics=['accuracy', tversky_loss, mean_IoU]
                   # loss_weights=loss_mod
                   )
 
+    callbacks = [
+        Show_Intermediate_Pred(val_images[13], val_masks[13])
+        # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
+        # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
+        # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15)
+    ]
 
-callbacks = [
-    Show_Intermediate_Pred(val_images[13], val_masks[13])
-    # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
-    # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
-    # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15)
-]
+    # Train the model, doing validation at the end of each epoch.
 
-# Train the model, doing validation at the end of each epoch.
+    epochs = 30
 
-epochs = 30
+    # history = model.fit(
+    #           x=train_images,
+    #           y=train_masks ,
+    #           epochs=epochs,
+    #           callbacks=callbacks,
+    #           validation_data=(val_images, val_masks))
 
-# history = model.fit(
-#           x=train_images,
-#           y=train_masks ,
-#           epochs=epochs,
-#           callbacks=callbacks,
-#           validation_data=(val_images, val_masks))
+    history = model.fit(
+        train_generator,
+        epochs=epochs,
+        callbacks=callbacks,
+        # validation_data=val_generator,
+        steps_per_epoch=60
+        # class_weight=classes_weights
+    )
 
-history = model.fit(
-    train_generator,
-    epochs=epochs,
-    callbacks=callbacks,
-    # validation_data=val_generator,
-    steps_per_epoch=60
-    # class_weight=classes_weights
-)
+    acc = history.history['accuracy']
+    # val_acc = history.history['val_accuracy']
+    loss = history.history['loss']
+    # val_loss = history.history['val_loss']
+    # epochs = range(1, len(acc) + 1)
+    #
+    # plt.plot(epochs, acc, 'b', color="orange", label='Training acc')
+    # plt.plot(epochs, val_acc, 'b', color="green", label='Validation acc')
+    # plt.title('Training and validation accuracy')
+    # plt.legend()
+    #
+    # plt.figure()
+    # plt.plot(epochs, loss, 'b', color="orange", label='Training loss')
+    # plt.plot(epochs, val_loss, 'b', color="green", label='Validation loss')
+    # plt.title('Training and validation loss')
+    # plt.legend()
+    # plt.show()
 
-acc = history.history['accuracy']
-# val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-# val_loss = history.history['val_loss']
-# epochs = range(1, len(acc) + 1)
-#
-# plt.plot(epochs, acc, 'b', color="orange", label='Training acc')
-# plt.plot(epochs, val_acc, 'b', color="green", label='Validation acc')
-# plt.title('Training and validation accuracy')
-# plt.legend()
-#
-# plt.figure()
-# plt.plot(epochs, loss, 'b', color="orange", label='Training loss')
-# plt.plot(epochs, val_loss, 'b', color="green", label='Validation loss')
-# plt.title('Training and validation loss')
-# plt.legend()
-# plt.show()
-
-predict_mask_and_plot(val_images[13], val_masks[13], model)
+    predict_mask_and_plot(val_images[13], val_masks[13], model)
 
