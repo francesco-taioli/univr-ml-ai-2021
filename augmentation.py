@@ -1,32 +1,30 @@
 import random
 import numpy as np
-from PIL import Image, ImageOps, ImageEnhance
 import cv2
 import albumentations as A
 import pickle
 import os
 import matplotlib.pyplot as plt
 
-def augment(image, prob=0.2):
+def augment(image, prob=0.5):
     """
     :param image: rgb image (dtype uint8)
     :return: augmented image (dtype uint8)
     """
-
     transform = A.Compose([
         A.RandomBrightnessContrast(p=prob),
         A.RandomContrast(p=prob),
         A.RandomGamma(p=prob),
         A.HueSaturationValue(p=prob),
-        A.GaussNoise(p=prob)
+        A.GaussNoise(p=prob),
+        A.CLAHE(p=prob)
     ])
 
     transformed = transform(image=image)
-    image = transformed["image"]
-
-    return image
+    return transformed["image"]
 
 # Showing how the augmentation is done (5 images augmented with their original counterparts
+# if you want to see an example, run python augmentation.py
 if __name__ == "__main__":
 
     with open(os.path.join('dataset', 'set_imgs'), 'rb') as imgs:
