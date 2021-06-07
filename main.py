@@ -7,6 +7,7 @@ from utils import create_train_validation_set, download_dataset, get_env_variabl
 from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot,  Show_Intermediate_Pred
 import os
 from tensorflow.keras.models import load_model
+from datetime import datetime
 
 # ##############
 # Settings
@@ -16,6 +17,7 @@ HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
 EPOCHS = 20
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
+SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 BATCH_SIZE = 8
 
 # ##############
@@ -142,6 +144,14 @@ else:
         steps_per_epoch=60
         # class_weight=classes_weights
     )
+
+    # datetime object containing current date and time
+    # dd/mm/YY H:M:S
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+    if SAVED_MODEL:
+        model.save(os.path.join("saved_model", "model"+dt_string+".h5"))
 
     acc = history.history['accuracy']
     # val_acc = history.history['val_accuracy']
