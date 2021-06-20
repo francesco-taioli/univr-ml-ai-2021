@@ -4,10 +4,14 @@ import numpy as np
 import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
-from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot,  Show_Intermediate_Pred
+from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot,  Show_Intermediate_Pred, pixel_accuracy, get_lr_metric
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
+from pathlib import Path
+from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
+
+# python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
 
 # ##############
 # Settings
@@ -111,18 +115,32 @@ if not TRAIN_MODEL:
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
 
+    # optimizer = tf.keras.optimizers.Adam()
+    # optimizer = tf.keras.optimizers.SGD()
+    optimizer = tf.keras.optimizers.RMSprop()
+    lr_metric = get_lr_metric(optimizer)
+
     #### HERE WE TRAIN THE MODEL
     tf.config.experimental_run_functions_eagerly(True)
-    model.compile(optimizer="rmsprop", loss=tversky_loss,
-                  metrics=['accuracy', tversky_loss, mean_IoU]
+    model.compile(optimizer=optimizer, loss=tversky_loss,
+                  metrics=[tversky_loss, mean_IoU, pixel_accuracy, lr_metric] # 'accuracy'
                   # loss_weights=loss_mod
                   )
 
+    Path(os.path.join(get_env_variable('TRAIN_DATA'), 'logs')).mkdir(parents=True, exist_ok=True)
+    Tensorboard = tf.keras.callbacks.TensorBoard(log_dir=os.path.join(get_env_variable('TRAIN_DATA'), 'logs',
+                                                            datetime.now().strftime("%Y%m%d-%H%M%S")),
+                                                write_graph= False
+                                                )
+
     callbacks = [
-        Show_Intermediate_Pred(val_images[13], val_masks[13])
+        # Show_Intermediate_Pred(val_images[13], val_masks[13])
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
-        # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15)
+        # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15),
+        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= 40 * 5),
+        # WarmUpLearningRateScheduler(warmup_batches=40 * 10, init_lr=0.01, verbose=0, decay_steps=40 * 20, alpha=0.001),
+        # Tensorboard
     ]
 
     # Train the model, doing validation at the end of each epoch.
@@ -153,7 +171,7 @@ else:
     if SAVED_MODEL:
         model.save(os.path.join("saved_model", "model"+dt_string+".h5"))
 
-    acc = history.history['accuracy']
+    acc = history.history['pixel_accuracy']
     # val_acc = history.history['val_accuracy']
     loss = history.history['loss']
     # val_loss = history.history['val_loss']

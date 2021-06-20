@@ -168,6 +168,24 @@ def mean_IoU(y_true, y_pred):
         IoU_mean += IoU_channel / number_classes
     return IoU_mean / number_items_in_batches
 
+def pixel_accuracy(y_true, y_pred):
+    '''
+    Implementation of the pixel accuracy metric
+    '''
+    number_items_in_batches = y_true.shape[0]
+    sum_true = 0
+    sum_total = 0
+
+    for b in range(number_items_in_batches):
+
+        pred_mask = np.argmax(y_pred[b], axis=-1)
+        real_mask = np.argmax(y_true[b], axis=-1)
+
+        sum_true += (pred_mask == real_mask).sum()
+        sum_total += int(get_env_variable('HEIGHT')) * int(get_env_variable('WIDTH'))
+
+    return sum_true / sum_total
+
 
 def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     image = np.reshape(img / 255., newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255.
@@ -202,3 +220,8 @@ class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         predict_mask_and_plot(self.image, self.mask, self.model, epoch, save=True)
+
+def get_lr_metric(optimizer):
+    def lr(y_true, y_pred):
+        return optimizer.lr
+    return lr
