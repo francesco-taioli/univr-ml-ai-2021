@@ -9,6 +9,7 @@ import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
 from pathlib import Path
+import numpy as np
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
@@ -23,6 +24,8 @@ EPOCHS = 20
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 BATCH_SIZE = 8
+# batches per epoch
+BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
 
 # ##########################################
 # download dataset and prepare it
@@ -44,7 +47,7 @@ with open('dataset/set_masks', 'rb') as ts:
 how_many_training_sample = 330
 train_images = imgs[0:how_many_training_sample, :, :, :]
 train_masks = masks[0:how_many_training_sample, :, :, :]
-val_images = imgs[how_many_training_sample:, :, :, :]
+val_images = imgs[how_many_training_sample:, :, :, :] / 255.
 val_masks = masks[how_many_training_sample:, :, :, :]
 
 print(f"Total images: {len(imgs)}")
@@ -121,8 +124,8 @@ else:
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
         # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15),
-        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= 40 * 5),
-        # WarmUpLearningRateScheduler(warmup_batches=40 * 10, init_lr=0.01, verbose=0, decay_steps=40 * 20, alpha=0.001),
+        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 20, alpha=0.001),
         # Tensorboard
     ]
 
@@ -132,8 +135,9 @@ else:
         train_generator,
         epochs=epochs,
         callbacks=callbacks,
-        # validation_data=val_generator,
-        steps_per_epoch=40
+        validation_data=(val_images.astype(np.float32), val_masks.astype(np.float32)),
+        # validation_steps=1,
+        steps_per_epoch=BPE
     )
 
     # dd/mm/YY H:M:S
