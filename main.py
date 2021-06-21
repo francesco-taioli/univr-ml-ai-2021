@@ -102,8 +102,6 @@ else:
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
-    #loss = tversky_loss()
-    loss = weighted_categorical_crossentropy()
 
     # model = get_model((HEIGHT,WIDTH), num_classes)
     model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
@@ -112,7 +110,7 @@ else:
 
     #### HERE WE TRAIN THE MODEL
     tf.config.experimental_run_functions_eagerly(True)
-    model.compile(optimizer=optimizer, loss=loss,
+    model.compile(optimizer=optimizer, loss=weighted_categorical_crossentropy,
                   metrics=[tversky_loss, mean_IoU, pixel_accuracy, lr_metric]
                   )
 
