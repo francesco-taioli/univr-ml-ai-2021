@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 from models.Fcn8 import Fcn8
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
-
+from sklearn.model_selection import train_test_split
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
 
 # ##########################################
@@ -45,11 +45,11 @@ with open('dataset/set_masks', 'rb') as ts:
 # ##########################################
 # create the train (and validation) masks and images
 # ##########################################
-how_many_training_sample = 330
-train_images = imgs[0:how_many_training_sample, :, :, :]
-train_masks = masks[0:how_many_training_sample, :, :, :]
-val_images = imgs[how_many_training_sample:, :, :, :] / 255.
-val_masks = masks[how_many_training_sample:, :, :, :]
+train_images, val_images, train_masks, val_masks = train_test_split(imgs, masks, test_size=0.3)
+# normalize the val images. The same operation is performed on train_images in the train generator
+val_images = val_images / 255.
+val_images = val_images.astype(np.float32)
+val_masks = val_masks.astype(np.float32)
 
 print(f"Total images: {len(imgs)}")
 print(f"[Split mask and image - Train] => Train  Image{train_images.shape} Train Mask:{train_masks.shape}")
@@ -138,7 +138,7 @@ else:
         train_generator,
         epochs=epochs,
         callbacks=callbacks,
-        validation_data=(val_images.astype(np.float32), val_masks.astype(np.float32)),
+        validation_data=(val_images, val_masks),
         # validation_steps=1,
         steps_per_epoch=BPE
     )
