@@ -89,9 +89,6 @@ mask_generator = mask_datagen.flow(train_masks, seed=seed, batch_size=BATCH_SIZE
 # combine generators into one which yields image and masks
 # train
 train_generator = (pair for pair in zip(image_generator, mask_generator))
-# validation
-generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1.0 / 255.)
-val_generator = generator.flow(val_images, val_masks)
 
 # ##########################################
 # Model Section
