@@ -13,9 +13,9 @@ from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
 
-# ##############
+# ##########################################
 # Settings
-# ##############
+# ##########################################
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
