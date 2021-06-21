@@ -4,7 +4,7 @@ import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
-    get_lr_metric
+    get_lr_metric, weighted_categorical_crossentropy
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
@@ -102,6 +102,8 @@ else:
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
+    #loss = tversky_loss()
+    loss = weighted_categorical_crossentropy()
 
     # model = get_model((HEIGHT,WIDTH), num_classes)
     model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
@@ -110,7 +112,7 @@ else:
 
     #### HERE WE TRAIN THE MODEL
     tf.config.experimental_run_functions_eagerly(True)
-    model.compile(optimizer=optimizer, loss=tversky_loss,
+    model.compile(optimizer=optimizer, loss=loss,
                   metrics=[tversky_loss, mean_IoU, pixel_accuracy, lr_metric]
                   )
 

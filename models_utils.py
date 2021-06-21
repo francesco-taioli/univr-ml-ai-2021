@@ -23,6 +23,14 @@ def tversky_loss(y_true, y_pred):
 
     return Ncl - T
 
+def weighted_categorical_crossentropy():
+    weights = [0.01, 0.5, 0.5]
+    def wcce(y_true, y_pred):
+        Kweights = K.constant(weights)
+        if not K.is_tensor(y_pred): y_pred = K.constant(y_pred)
+        y_true = K.cast(y_true, y_pred.dtype)
+        return K.categorical_crossentropy(y_true, y_pred) * K.sum(y_true * Kweights, axis=-1)
+    return wcce
 
 def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"):
     x = layers.Conv2D(filters=nfilters, kernel_size=(size, size), padding=padding, kernel_initializer=initializer)(tensor)
