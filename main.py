@@ -23,6 +23,8 @@ EPOCHS = 20
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 BATCH_SIZE = 8
+# batches per epoch
+BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
 
 # ##############
 # download dataset and prepare it
@@ -138,8 +140,8 @@ else:
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
         # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15),
-        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= 40 * 5),
-        # WarmUpLearningRateScheduler(warmup_batches=40 * 10, init_lr=0.01, verbose=0, decay_steps=40 * 20, alpha=0.001),
+        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 20, alpha=0.001),
         # Tensorboard
     ]
 
@@ -159,7 +161,7 @@ else:
         epochs=epochs,
         callbacks=callbacks,
         # validation_data=val_generator,
-        steps_per_epoch=40
+        steps_per_epoch=BPE
         # class_weight=classes_weights
     )
 
