@@ -10,6 +10,7 @@ from tensorflow.keras.models import load_model
 from datetime import datetime
 from pathlib import Path
 import numpy as np
+from models.Fcn8 import Fcn8
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
@@ -95,9 +96,6 @@ val_generator = generator.flow(val_images, val_masks)
 # ##########################################
 # Model Section
 # ##########################################
-# model = get_model((HEIGHT,WIDTH), num_classes)
-model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-# model.summary()
 if not TRAIN_MODEL:
     saved_model = load_model('saved_model/bact_seg_10_epoch_v1.h5', compile=False)
     image_index = 14
@@ -107,6 +105,11 @@ else:
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
+
+    # model = get_model((HEIGHT,WIDTH), num_classes)
+    #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
+    # model.summary()
 
     #### HERE WE TRAIN THE MODEL
     tf.config.experimental_run_functions_eagerly(True)
