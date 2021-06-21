@@ -7,7 +7,7 @@ from utils import get_env_variable
 import matplotlib.pyplot as plt
 import os
 import cv2
-
+from itertools import product
 def tversky_loss(y_true, y_pred):
     alpha = 0.5
     beta = 0.5
@@ -23,14 +23,19 @@ def tversky_loss(y_true, y_pred):
 
     return Ncl - T
 
-def weighted_categorical_crossentropy():
-    weights = [0.01, 0.5, 0.5]
-    def wcce(y_true, y_pred):
-        Kweights = K.constant(weights)
-        if not K.is_tensor(y_pred): y_pred = K.constant(y_pred)
-        y_true = K.cast(y_true, y_pred.dtype)
-        return K.categorical_crossentropy(y_true, y_pred) * K.sum(y_true * Kweights, axis=-1)
-    return wcce
+def weighted_categorical_crossentropy(y_true, y_pred):
+    weights = np.ones((3,3))
+    weights[2,:] = 3
+    weights[3,:] = 3
+    nb_cl = len(weights)
+    final_mask = K.zeros_like(y_pred[:, 0])
+    y_pred_max = K.max(y_pred, axis=1)
+    y_pred_max = K.expand_dims(y_pred_max, 1)
+    y_pred_max_mat = K.equal(y_pred, y_pred_max)
+    for c_p, c_t in product(range(nb_cl), range(nb_cl)):
+        final_mask += (K.cast(weights[c_t, c_p], K.floatx()) * K.cast(y_pred_max_mat[:, c_p], K.floatx()) * K.cast(
+            y_true[:, c_t], K.floatx()))
+    return K.categorical_crossentropy(y_pred, y_true) * final_mask
 
 def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"):
     x = layers.Conv2D(filters=nfilters, kernel_size=(size, size), padding=padding, kernel_initializer=initializer)(tensor)
