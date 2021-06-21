@@ -1,6 +1,5 @@
 from tensorflow.keras.layers import  Input, MaxPooling2D
 from tensorflow.keras.layers import Conv2D, Dropout, Conv2DTranspose, Add, Softmax
-from keras.layers.core import Activation
 from tensorflow.keras.layers import Cropping2D
 from tensorflow.keras.models import Model
 

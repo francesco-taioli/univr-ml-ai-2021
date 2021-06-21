@@ -21,7 +21,7 @@ from sklearn.model_selection import train_test_split
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 20
+EPOCHS = 100
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 BATCH_SIZE = 8
@@ -104,8 +104,8 @@ else:
     lr_metric = get_lr_metric(optimizer)
 
     # model = get_model((HEIGHT,WIDTH), num_classes)
-    #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
+    model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
     #### HERE WE TRAIN THE MODEL
@@ -120,7 +120,7 @@ else:
                                                  write_graph=False
                                                  )
     callbacks = [
-        # Show_Intermediate_Pred(val_images[13], val_masks[13])
+        Show_Intermediate_Pred(val_images[13], val_masks[13])
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
         # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15),
@@ -130,10 +130,9 @@ else:
     ]
 
     # Train the model, doing validation at the end of each epoch.
-    epochs = 15
     history = model.fit(
         train_generator,
-        epochs=epochs,
+        epochs=EPOCHS,
         callbacks=callbacks,
         validation_data=(val_images, val_masks),
         # validation_steps=1,
