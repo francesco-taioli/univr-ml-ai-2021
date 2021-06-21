@@ -25,8 +25,8 @@ def tversky_loss(y_true, y_pred):
 
 def weighted_categorical_crossentropy(y_true, y_pred):
     weights = np.ones((3,3))
-    weights[2,:] = 3
-    weights[3,:] = 3
+    weights[1, :] = 3
+    weights[2, :] = 3
     nb_cl = len(weights)
     final_mask = K.zeros_like(y_pred[:, 0])
     y_pred_max = K.max(y_pred, axis=1)
