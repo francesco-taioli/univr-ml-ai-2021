@@ -9,6 +9,7 @@ import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
 from pathlib import Path
+import numpy as np
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
@@ -46,7 +47,7 @@ with open('dataset/set_masks', 'rb') as ts:
 how_many_training_sample = 330
 train_images = imgs[0:how_many_training_sample, :, :, :]
 train_masks = masks[0:how_many_training_sample, :, :, :]
-val_images = imgs[how_many_training_sample:, :, :, :]
+val_images = imgs[how_many_training_sample:, :, :, :] / 255.
 val_masks = masks[how_many_training_sample:, :, :, :]
 
 print(f"Total images: {len(imgs)}")
@@ -134,9 +135,9 @@ else:
         train_generator,
         epochs=epochs,
         callbacks=callbacks,
-        # validation_data=val_generator,
+        validation_data=(val_images.astype(np.float32), val_masks.astype(np.float32)),
+        # validation_steps=1,
         steps_per_epoch=BPE
-        # class_weight=classes_weights
     )
 
     # dd/mm/YY H:M:S
