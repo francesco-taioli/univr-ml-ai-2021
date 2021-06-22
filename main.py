@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 import numpy as np
 from models.Fcn8 import Fcn8
+from models.SegNet import segnet
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 from sklearn.model_selection import train_test_split
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
@@ -21,10 +22,10 @@ from sklearn.model_selection import train_test_split
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 10
+EPOCHS = 30
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
-BATCH_SIZE = 2
+BATCH_SIZE = 8
 # batches per epoch
 BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
 
@@ -109,7 +110,8 @@ else:
     loss = pixel_wise_loss()
 
     # model = get_model((HEIGHT,WIDTH), num_classes)
-    model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    model = segnet(input_shape=(HEIGHT, WIDTH, NUM_CLASSES), n_labels=NUM_CLASSES)
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
