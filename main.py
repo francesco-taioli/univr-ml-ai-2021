@@ -63,7 +63,7 @@ axs[1].imshow(train_masks[0] * 255), axs[1].set_title('Mask [Bg + cell + bact]')
 axs[2].imshow(train_masks[0, :, :, 1]), axs[2].set_title('blood cell')
 axs[3].imshow(train_masks[0, :, :, 2]), axs[3].set_title('bacteria')
 axs[4].imshow(train_masks[0, :, :, 0]), axs[4].set_title('Background')
-
+plt.show()
 # ##########################################
 # Data Augmentation
 # ##########################################
