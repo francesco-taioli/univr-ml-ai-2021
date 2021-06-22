@@ -1,5 +1,6 @@
-from segmentation_models import PSPNet
+from segmentation_models import PSPNet, Unet
 from utils import get_env_variable
+
 # define model
 # todo change input size
 class PSP_Net():
