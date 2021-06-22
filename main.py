@@ -5,6 +5,7 @@ from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
     get_lr_metric, weighted_categorical_crossentropy, pixel_wise_loss
+from tensorflow.keras.layers import Input
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
@@ -12,7 +13,7 @@ from pathlib import Path
 import numpy as np
 # models
 from models.Fcn8 import Fcn8
-from models.SegNet import segnet
+from models.SegNet import SegNet
 from models.U_Net import Unet
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 from sklearn.model_selection import train_test_split
@@ -111,9 +112,9 @@ else:
     # loss = weighted_categorical_crossentropy()
     loss = pixel_wise_loss()
 
+    model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
     # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    model = segnet(input_shape=(HEIGHT, WIDTH, NUM_CLASSES), n_labels=NUM_CLASSES)
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
