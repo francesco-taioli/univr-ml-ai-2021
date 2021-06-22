@@ -21,10 +21,10 @@ from sklearn.model_selection import train_test_split
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 100
+EPOCHS = 10
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
-BATCH_SIZE = 8
+BATCH_SIZE = 2
 # batches per epoch
 BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
 
