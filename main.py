@@ -4,7 +4,7 @@ import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
-    get_lr_metric
+    get_lr_metric, pixel_wise_loss
 
 import os
 from tensorflow.keras.models import load_model
@@ -112,7 +112,7 @@ else:
     # loss = weighted_categorical_crossentropy()
     loss = pixel_wise_loss()
 
-    model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
+    #model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
     #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
     model = PSP_Net().get_model()
