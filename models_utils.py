@@ -203,16 +203,12 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     final[:, :, 1] = res == 1
     final[:, :, 2] = res == 2
 
-
-    fig, axs = plt.subplots(1, 4)
+    fig, axs = plt.subplots(1, 3)
     fig.set_size_inches(20, 6)
     axs[0].imshow(img), axs[0].set_title('Original Image')
     axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
     axs[2].imshow(final), axs[2].set_title('Evaluation mode' if epoch == 0 else 'Pred mask epoch {}'.format(epoch))
     # delete background for overlay
-
-    axs[3].imshow(cv2.addWeighted(img.astype(np.uint8), 0.5, np.asarray(final * 255).astype(np.uint8), 0.3, 0)), axs[
-        3].set_title('Overlay')
 
     if save:
         plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', 'epoch{}.png'.format(epoch)))
