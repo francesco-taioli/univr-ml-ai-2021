@@ -3,14 +3,17 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
-from models_utils import Unet, tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
+from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
     get_lr_metric
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
 from pathlib import Path
 import numpy as np
+# models
 from models.Fcn8 import Fcn8
+from models.U_Net import Unet
+
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 from sklearn.model_selection import train_test_split
 # python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
