@@ -5,6 +5,7 @@ from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
     get_lr_metric
+
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
@@ -12,6 +13,7 @@ from pathlib import Path
 import numpy as np
 # models
 from models.Fcn8 import Fcn8
+from models.SegNet import SegNet
 from models.U_Net import Unet
 from models.PSPNet import PSP_Net
 
@@ -25,7 +27,7 @@ from sklearn.model_selection import train_test_split
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 100
+EPOCHS = 30
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 BATCH_SIZE = 8
@@ -106,7 +108,11 @@ else:
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
+    # loss = tversky_loss()
+    # loss = weighted_categorical_crossentropy()
+    loss = pixel_wise_loss()
 
+    model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
     #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
     model = PSP_Net().get_model()
@@ -115,7 +121,7 @@ else:
 
     #### HERE WE TRAIN THE MODEL
     tf.config.experimental_run_functions_eagerly(True)
-    model.compile(optimizer=optimizer, loss=tversky_loss,
+    model.compile(optimizer=optimizer, loss=loss,
                   metrics=[tversky_loss, mean_IoU, pixel_accuracy, lr_metric]
                   )
 

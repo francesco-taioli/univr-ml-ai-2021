@@ -25,6 +25,27 @@ def tversky_loss(y_true, y_pred):
 
     return Ncl - T
 
+def pixel_wise_loss():
+    pos_weight = tf.constant([[1.0, 2.0, 2.0]])
+    def pwl(y_true, y_pred):
+        loss = tf.nn.weighted_cross_entropy_with_logits(
+            y_true,
+            y_pred,
+            pos_weight,
+            name=None
+        )
+        return K.mean(loss,axis=-1)
+    return pwl
+
+def weighted_categorical_crossentropy():
+    weights = [1.0, 2.0, 2.0]
+    def wcce(y_true, y_pred):
+        Kweights = K.constant(weights)
+        # if not K.is_tensor(y_pred):
+        y_pred = K.constant(y_pred)
+        y_true = K.cast(y_true, y_pred.dtype)
+        return K.categorical_crossentropy(y_true, y_pred) * K.sum(y_true * Kweights, axis=-1)
+    return wcce
 
 
 
