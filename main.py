@@ -4,7 +4,7 @@ import tensorflow as tf
 from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
-    get_lr_metric, weighted_categorical_crossentropy, pixel_wise
+    get_lr_metric, weighted_categorical_crossentropy, pixel_wise_loss
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
