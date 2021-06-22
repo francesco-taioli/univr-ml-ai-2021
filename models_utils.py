@@ -170,6 +170,11 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     else:
         plt.show()
 
+def get_lr_metric(optimizer):
+    def lr(y_true, y_pred):
+        return optimizer.lr
+
+    return lr
 
 class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
 
@@ -181,8 +186,4 @@ class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
         predict_mask_and_plot(self.image, self.mask, self.model, epoch, save=True)
 
 
-def get_lr_metric(optimizer):
-    def lr(y_true, y_pred):
-        return optimizer.lr
 
-    return lr

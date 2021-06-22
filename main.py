@@ -13,6 +13,7 @@ import numpy as np
 # models
 from models.Fcn8 import Fcn8
 from models.U_Net import Unet
+from models.PSPNet import PSP_Net
 
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 from sklearn.model_selection import train_test_split
@@ -107,7 +108,8 @@ else:
     lr_metric = get_lr_metric(optimizer)
 
     # model = get_model((HEIGHT,WIDTH), num_classes)
-    model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    model = PSP_Net().get_model()
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
