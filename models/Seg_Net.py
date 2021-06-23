@@ -2,7 +2,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, LayerNormalization, So
     Conv2DTranspose, add, Activation, Reshape, BatchNormalization, Input
 import  tensorflow as tf
 
-def SegNet(shape, classes):
+def Seg_Net(shape, classes):
     inputs = Input(shape=shape)
     outputs = SegNetArchitecture(inputs, num_classes=classes)
     model = tf.keras.models.Model(inputs=inputs, outputs=outputs)

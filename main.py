@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 # models
 from models.Fcn8 import Fcn8
-from models.SegNet import SegNet
+from models.Seg_Net import Seg_Net
 from models.U_Net import Unet
 from models.PSP_Net import PSP_Net
 
@@ -112,10 +112,10 @@ else:
     # loss = weighted_categorical_crossentropy()
     loss = pixel_wise_loss()
 
-    #model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
+    #model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
     #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    model = PSP_Net().get_model()
+    model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
