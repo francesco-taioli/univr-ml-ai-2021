@@ -7,3 +7,4 @@
 # package
  - kaggle
  - albumentations
+ - segmentation model - pip install -U segmentation-models
