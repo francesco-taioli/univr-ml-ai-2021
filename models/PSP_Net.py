@@ -11,3 +11,4 @@ def PSP_Net(input_shape=(256,256,3)):
                   encoder_weights= None, #'imagenet',
                   # downsample_factor=4
                   )
+
