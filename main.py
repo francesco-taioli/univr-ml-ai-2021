@@ -16,6 +16,7 @@ from models.Fcn8 import Fcn8
 from models.Seg_Net import Seg_Net
 from models.U_Net import Unet
 from models.PSP_Net import PSP_Net
+from models.Link_Net import Link_Net
 
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 from sklearn.model_selection import train_test_split
@@ -115,7 +116,8 @@ else:
     #model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
     #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    #model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
