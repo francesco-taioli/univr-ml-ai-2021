@@ -100,7 +100,7 @@ train_generator = (pair for pair in zip(image_generator, mask_generator))
 # Model Section
 # ##########################################
 if not TRAIN_MODEL:
-    saved_model = load_model('saved_model/bact_seg_10_epoch_v1.h5', compile=False)
+    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'bact_seg_10_epoch_v1.h5', compile=False))
     image_index = 14
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
@@ -108,14 +108,15 @@ else:
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
+
     # loss = tversky_loss()
     # loss = weighted_categorical_crossentropy()
     loss = pixel_wise_loss()
 
     #model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
-    # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    model = PSP_Net().get_model()
+    model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    # model = PSP_Net().get_model()
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
@@ -152,5 +153,5 @@ else:
 
     # dd/mm/YY H:M:S
     if SAVED_MODEL:
-        model.save(os.path.join("saved_model", f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
+        model.save(os.path.join(get_env_variable('TRAIN_DATA'), "saved_model", f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
     predict_mask_and_plot(val_images[13], val_masks[13], model)
