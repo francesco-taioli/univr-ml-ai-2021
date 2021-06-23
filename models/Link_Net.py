@@ -7,5 +7,6 @@ def Link_Net(input_shape=(256,256,3)):
     return Linknet(backbone_name=BACKBONE,
                    input_shape=input_shape,
                    classes=3,
-                   activation='softmax'
+                   activation='softmax',
+                   encoder_weights=None
                    )

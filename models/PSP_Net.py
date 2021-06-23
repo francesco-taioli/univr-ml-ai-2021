@@ -8,7 +8,7 @@ def PSP_Net(input_shape=(256,256,3)):
     return PSPNet(BACKBONE,
                   input_shape=input_shape,
                   classes=3,
-                  encoder_weights='imagenet',
+                  encoder_weights=None,
                   downsample_factor=8
                   )
 
