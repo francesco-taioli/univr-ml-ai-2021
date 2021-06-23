@@ -115,8 +115,8 @@ else:
 
     #model = SegNet((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = get_model((HEIGHT,WIDTH), num_classes)
-    model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    # model = PSP_Net().get_model()
+    # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    model = PSP_Net().get_model()
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     # model.summary()
 
