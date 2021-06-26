@@ -30,7 +30,7 @@ from segmentation_models.metrics import IOUScore
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 50
+EPOCHS = 1 # 50
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 CROSS_VALIDATION = bool(get_env_variable('CROSS_VALIDATION', is_boolean_value=True))
@@ -111,7 +111,7 @@ else:
 
     # optimizer = tf.keras.optimizers.Adam()
     # optimizer = tf.keras.optimizers.SGD()
-    optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.01)
+    optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.001)
     lr_metric = get_lr_metric(optimizer)
 
     loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
@@ -120,15 +120,16 @@ else:
 
     # model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    # model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
-    model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    # model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     model.summary()
+    metrics = [mean_IoU, pixel_accuracy, lr_metric]
 
     #### MODEL TRAINING
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer=optimizer, loss=loss,
-                  metrics=[mean_IoU, pixel_accuracy, lr_metric]
+                  metrics= metrics
                   )
 
     Path(os.path.join(get_env_variable('TRAIN_DATA'), 'logs')).mkdir(parents=True, exist_ok=True)
@@ -140,24 +141,26 @@ else:
         Show_Intermediate_Pred(val_images[13], val_masks[13]),
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
         tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001, restore_best_weights=True),
-        tf.keras.callbacks.ReduceLROnPlateau(monitor='pixel_accuracy', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
-        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        # tf.keras.callbacks.ReduceLROnPlateau(monitor='pixel_accuracy', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
+        CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
         # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
-        Tensorboard
+        # Tensorboard
     ]
 
     if CROSS_VALIDATION:
         print("Starting cross validation test...")
-        cross_validation(model, imgs, masks, EPOCHS, callbacks, BPE, image_datagen, mask_datagen, BATCH_SIZE)
+        cross_validation(model, imgs, masks, EPOCHS, callbacks, BPE, image_datagen, mask_datagen, BATCH_SIZE,
+                         metrics, optimizer, loss)
 
-    # Train the model, doing validation at the end of each epoch.
-    history = model.fit(
-        train_generator,
-        epochs=EPOCHS,
-        callbacks=callbacks,
-        validation_data=(val_images, val_masks),
-        steps_per_epoch=BPE
-    )
+    else:
+        # Train the model, doing validation at the end of each epoch.
+        history = model.fit(
+            train_generator,
+            epochs=EPOCHS,
+            callbacks=callbacks,
+            validation_data=(val_images, val_masks),
+            steps_per_epoch=BPE
+        )
 
     # dd/mm/YY H:M:S
     if SAVED_MODEL:
