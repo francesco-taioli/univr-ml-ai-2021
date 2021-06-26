@@ -106,24 +106,24 @@ if not TRAIN_MODEL:
     image_index = 14
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
+
     # optimizer = tf.keras.optimizers.Adam()
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
-    # loss = weighted_categorical_crossentropy()
-    loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
-    # loss = CategoricalCELoss(class_weights=[0.1, 5.0, 10.0])
-    # loss = pixel_wise_loss()
 
-    model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
-    # model = get_model((HEIGHT,WIDTH), num_classes)
+    # loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
+    # loss = CategoricalCELoss(class_weights=[0.1, 5.0, 10.0])
+    loss = pixel_wise_loss()
+
+    # model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
     # model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
-    # model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     model.summary()
 
-    #### HERE WE TRAIN THE MODEL
+    #### MODEL TRAINING
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer=optimizer, loss=loss,
                   metrics=[mean_IoU, pixel_accuracy, lr_metric]
@@ -137,11 +137,11 @@ else:
     callbacks = [
         Show_Intermediate_Pred(val_images[13], val_masks[13]),
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
-        # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
         tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001, restore_best_weights=True),
-        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
-        # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 20, alpha=0.001),
-        # Tensorboard
+        # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
+        CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
+        Tensorboard
     ]
 
     # Train the model, doing validation at the end of each epoch.
@@ -150,7 +150,6 @@ else:
         epochs=EPOCHS,
         callbacks=callbacks,
         validation_data=(val_images, val_masks),
-        # validation_steps=1,
         steps_per_epoch=BPE
     )
 
