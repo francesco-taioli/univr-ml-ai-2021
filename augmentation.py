@@ -50,7 +50,7 @@ if __name__ == "__main__":
             dataset[i] = cv2.flip(dataset[i], -1)
 
         ax.append(fig.add_subplot(rows, columns, columns + i + 1))
-        image = augment(dataset[i], prob=0.4)
+        image = augment(dataset[i], prob=0.6)
         plt.imshow(image.astype(np.uint8))
         plt.axis('off')
 

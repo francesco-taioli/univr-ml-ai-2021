@@ -5,23 +5,24 @@ from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
     get_lr_metric, pixel_wise_loss
-from segmentation_models.losses import JaccardLoss, CategoricalCELoss
-from segmentation_models.metrics import IOUScore
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
 from pathlib import Path
 import numpy as np
-# models
+from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
+from sklearn.model_selection import train_test_split
+from try_cross_validation import cross_validation
+# ##########################################
+# Models
+# ##########################################
 from models.Fcn8 import Fcn8
 from models.Seg_Net import Seg_Net
 from models.U_Net import Unet
 from models.PSP_Net import PSP_Net
 from models.Link_Net import Link_Net
-
-from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
-from sklearn.model_selection import train_test_split
-# python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
+from segmentation_models.losses import JaccardLoss, CategoricalCELoss
+from segmentation_models.metrics import IOUScore
 
 # ##########################################
 # Settings
@@ -32,6 +33,7 @@ NUM_CLASSES = 3
 EPOCHS = 50
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
+CROSS_VALIDATION = bool(get_env_variable('CROSS_VALIDATION', is_boolean_value=True))
 BATCH_SIZE = 8
 # batches per epoch
 BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
@@ -143,6 +145,10 @@ else:
         # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
         Tensorboard
     ]
+
+    if CROSS_VALIDATION:
+        print("Starting cross validation test...")
+        cross_validation(model, imgs, masks, EPOCHS, callbacks, BPE, image_datagen, mask_datagen, BATCH_SIZE)
 
     # Train the model, doing validation at the end of each epoch.
     history = model.fit(
