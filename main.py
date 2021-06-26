@@ -109,12 +109,12 @@ else:
 
     # optimizer = tf.keras.optimizers.Adam()
     # optimizer = tf.keras.optimizers.SGD()
-    optimizer = tf.keras.optimizers.RMSprop()
+    optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.01)
     lr_metric = get_lr_metric(optimizer)
 
-    # loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
+    loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
     # loss = CategoricalCELoss(class_weights=[0.1, 5.0, 10.0])
-    loss = pixel_wise_loss()
+    # loss = pixel_wise_loss()
 
     # model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
@@ -138,8 +138,8 @@ else:
         Show_Intermediate_Pred(val_images[13], val_masks[13]),
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
         tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001, restore_best_weights=True),
-        # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
-        CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        tf.keras.callbacks.ReduceLROnPlateau(monitor='pixel_accuracy', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
+        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
         # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
         Tensorboard
     ]
