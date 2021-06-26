@@ -39,9 +39,9 @@ def create_layer_of_color(mask):
     img = np.asarray(mask)
     tmp = np.zeros((int(get_env_variable('HEIGHT')), int(get_env_variable('WIDTH')), 3), dtype=int)
 
-    tmp[:, :, 0] = img == 0
-    tmp[:, :, 1] = img == 1
-    tmp[:, :, 2] = img == 2
+    tmp[:, :, 0] = img == 0  # background
+    tmp[:, :, 1] = img == 1  # blood cell
+    tmp[:, :, 2] = img == 2  # bacteria
     return tmp
 
 
