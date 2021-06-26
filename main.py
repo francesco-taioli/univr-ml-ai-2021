@@ -5,7 +5,8 @@ from augmentation import augment
 from utils import create_train_validation_set, download_dataset, get_env_variable
 from models_utils import tversky_loss, mean_IoU, predict_mask_and_plot, Show_Intermediate_Pred, pixel_accuracy, \
     get_lr_metric, pixel_wise_loss
-
+from segmentation_models.losses import JaccardLoss, CategoricalCELoss
+from segmentation_models.metrics import IOUScore
 import os
 from tensorflow.keras.models import load_model
 from datetime import datetime
@@ -28,7 +29,7 @@ from sklearn.model_selection import train_test_split
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 30
+EPOCHS = 50
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 BATCH_SIZE = 8
@@ -52,7 +53,7 @@ with open('dataset/set_masks', 'rb') as ts:
 # ##########################################
 # create the train (and validation) masks and images
 # ##########################################
-train_images, val_images, train_masks, val_masks = train_test_split(imgs, masks, test_size=0.3)
+train_images, val_images, train_masks, val_masks = train_test_split(imgs, masks, test_size=0.3, random_state=3)
 # normalize the val images. The same operation is performed on train_images in the train generator
 val_images = val_images / 255.
 val_images = val_images.astype(np.float32)
@@ -101,30 +102,31 @@ train_generator = (pair for pair in zip(image_generator, mask_generator))
 # Model Section
 # ##########################################
 if not TRAIN_MODEL:
-    saved_model = load_model('saved_model/bact_seg_10_epoch_v1.h5', compile=False)
+    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'bact_seg_10_epoch_v1.h5', compile=False))
     image_index = 14
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
+
     # optimizer = tf.keras.optimizers.Adam()
     # optimizer = tf.keras.optimizers.SGD()
     optimizer = tf.keras.optimizers.RMSprop()
     lr_metric = get_lr_metric(optimizer)
-    # loss = tversky_loss()
-    # loss = weighted_categorical_crossentropy()
+
+    # loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
+    # loss = CategoricalCELoss(class_weights=[0.1, 5.0, 10.0])
     loss = pixel_wise_loss()
 
-    #model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
-    # model = get_model((HEIGHT,WIDTH), num_classes)
-    #model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    #model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    # model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
+    # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
+    # model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
     model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
-    # model.summary()
+    model.summary()
 
-    #### HERE WE TRAIN THE MODEL
+    #### MODEL TRAINING
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer=optimizer, loss=loss,
-                  metrics=[tversky_loss, mean_IoU, pixel_accuracy, lr_metric]
+                  metrics=[mean_IoU, pixel_accuracy, lr_metric]
                   )
 
     Path(os.path.join(get_env_variable('TRAIN_DATA'), 'logs')).mkdir(parents=True, exist_ok=True)
@@ -133,13 +135,13 @@ else:
                                                  write_graph=False
                                                  )
     callbacks = [
-        Show_Intermediate_Pred(val_images[13], val_masks[13])
+        Show_Intermediate_Pred(val_images[13], val_masks[13]),
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
+        tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001, restore_best_weights=True),
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.1, patience=3),
-        # tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15),
-        # CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
-        # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 20, alpha=0.001),
-        # Tensorboard
+        CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
+        Tensorboard
     ]
 
     # Train the model, doing validation at the end of each epoch.
@@ -148,11 +150,10 @@ else:
         epochs=EPOCHS,
         callbacks=callbacks,
         validation_data=(val_images, val_masks),
-        # validation_steps=1,
         steps_per_epoch=BPE
     )
 
     # dd/mm/YY H:M:S
     if SAVED_MODEL:
-        model.save(os.path.join("saved_model", f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
+        model.save(os.path.join(get_env_variable('TRAIN_DATA'), "saved_model", f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
     predict_mask_and_plot(val_images[13], val_masks[13], model)

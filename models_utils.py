@@ -26,7 +26,7 @@ def tversky_loss(y_true, y_pred):
     return Ncl - T
 
 def pixel_wise_loss():
-    pos_weight = tf.constant([[1.0, 2.0, 2.0]])
+    pos_weight = tf.constant([[0.1, 2.0, 2.0]])
     def pwl(y_true, y_pred):
         loss = tf.nn.weighted_cross_entropy_with_logits(
             y_true,
