@@ -24,6 +24,8 @@ from models.Link_Net import Link_Net
 from segmentation_models.losses import JaccardLoss, CategoricalCELoss
 from segmentation_models.metrics import IOUScore
 
+# python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
+
 # ##########################################
 # Settings
 # ##########################################
