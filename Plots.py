@@ -48,12 +48,12 @@ def plot_MeanIoU_val():
 
        # Create labels
        for i in range(0, len(MeanIoU)):
-           plt.text(x=i + 0.9, y=[j for j in values][i] + 1, s=str(int([j for j in values][i])), font=font)
+           plt.text(x=i + 0.6, y=[j for j in values][i]+0.005, s=str(float([j for j in values][i])), font=font)
 
        plt.subplots_adjust(bottom=0.2, top=0.98)
        plt.xlabel('Models', fontT)
        plt.ylabel('MeanIoU', fontT)
-       plt.title('Validation MeanIoU', fontT)
+       plt.title('Best validation meanIoU', fontT)
        plt.yticks(np.arange(0, 1, 0.25), [0, 0.25, 0.5, 0.75], font=fontT)
 
        plt.show()
