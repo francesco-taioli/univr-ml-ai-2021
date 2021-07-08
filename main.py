@@ -32,13 +32,15 @@ from segmentation_models.metrics import IOUScore
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 1 # 50
+EPOCHS = 50
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 CROSS_VALIDATION = bool(get_env_variable('CROSS_VALIDATION', is_boolean_value=True))
 BATCH_SIZE = 8
 # batches per epoch
 BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
+# dictinary for history when doing cross validation
+all_history = {}
 
 # ##########################################
 # download dataset and prepare it
@@ -122,8 +124,8 @@ else:
 
     # model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
     # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
-    # model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    # model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
+    model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
     # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
     model.summary()
     metrics = [mean_IoU, pixel_accuracy, lr_metric]
@@ -146,12 +148,12 @@ else:
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='pixel_accuracy', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
         CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
         # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
-        # Tensorboard
+        Tensorboard
     ]
 
     if CROSS_VALIDATION:
         print("Starting cross validation test...")
-        cross_validation(model, imgs, masks, EPOCHS, callbacks, BPE, image_datagen, mask_datagen, BATCH_SIZE,
+        all_history = cross_validation(model, imgs, masks, EPOCHS, callbacks, BPE, image_datagen, mask_datagen, BATCH_SIZE,
                          metrics, optimizer, loss)
 
     else:

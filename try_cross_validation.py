@@ -9,7 +9,7 @@ import numpy as np
 def cross_validation(model, images, masks, EPOCHS, callbacks, BPE, image_datagen, mask_datagen, BATCH_SIZE, metrics, optimizer, loss):
     all_history = {}
     fold = 1
-    kfold = KFold(n_splits=5, shuffle=True ) # split images and masks
+    kfold = KFold(n_splits=5, shuffle=True ) # split images and masks obtaining n_splits
     Path(os.path.join(get_env_variable('TRAIN_DATA'), 'logs', 'folds')).mkdir(parents=True, exist_ok=True)
     mean_meanIoU = 0.0
     for train, val in kfold.split(images, masks):
@@ -49,3 +49,5 @@ def cross_validation(model, images, masks, EPOCHS, callbacks, BPE, image_datagen
     file_writer = tf.summary.create_file_writer('S:\\train_data\\logs\\folds\\metrics')
     file_writer.set_as_default()
     tf.summary.scalar('cross_val_meanIoU', data=mean_meanIoU, step=1)
+
+    return all_history
