@@ -5,7 +5,8 @@
 - put your kaggle api settings inside the variable
 
 # Tensorboard
-python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 <--change logdir based on env variable TRAIN_DATA
+python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 
+// change logdir based on env variable TRAIN_DATA
 
 
 # package
