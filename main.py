@@ -108,7 +108,8 @@ train_generator = (pair for pair in zip(image_generator, mask_generator))
 # Model Section
 # ##########################################
 if not TRAIN_MODEL:
-    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'bact_seg_10_epoch_v1.h5', compile=False))
+    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'bact_seg_10_epoch_v1.h5'),
+                             compile=False)
     image_index = 14
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
@@ -118,7 +119,7 @@ else:
     optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.001)
     lr_metric = get_lr_metric(optimizer)
 
-    loss = JaccardLoss() # class_weights=[0.1, 5.0, 10.0])
+    loss = JaccardLoss()  # class_weights=[0.1, 5.0, 10.0])
     # loss = CategoricalCELoss(class_weights=[0.1, 5.0, 10.0])
     # loss = pixel_wise_loss()
 
@@ -133,7 +134,7 @@ else:
     #### MODEL TRAINING
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer=optimizer, loss=loss,
-                  metrics= metrics
+                  metrics=metrics
                   )
 
     Path(os.path.join(get_env_variable('TRAIN_DATA'), 'logs')).mkdir(parents=True, exist_ok=True)
@@ -144,9 +145,10 @@ else:
     callbacks = [
         # Show_Intermediate_Pred(val_images[13], val_masks[13]),
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
-        tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001, restore_best_weights=True),
+        tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001,
+                                         restore_best_weights=True),
         # tf.keras.callbacks.ReduceLROnPlateau(monitor='pixel_accuracy', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
-        CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size= BPE * 5),
+        CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size=BPE * 5),
         # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
         Tensorboard
     ]
@@ -154,7 +156,7 @@ else:
     if CROSS_VALIDATION:
         print("Starting cross validation test...")
         all_history = cross_validation(model, imgs, masks, EPOCHS, BPE, image_datagen, mask_datagen, BATCH_SIZE,
-                         metrics, optimizer, loss)
+                                       metrics, optimizer, loss)
 
     else:
         # Train the model, doing validation at the end of each epoch.
@@ -168,5 +170,6 @@ else:
 
     # dd/mm/YY H:M:S
     if SAVED_MODEL:
-        model.save(os.path.join(get_env_variable('TRAIN_DATA'), "saved_model", f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
+        model.save(os.path.join(get_env_variable('TRAIN_DATA'), "saved_model",
+                                f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
     predict_mask_and_plot(val_images[13], val_masks[13], model)
