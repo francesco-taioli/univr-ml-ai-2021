@@ -7,6 +7,7 @@ from utils import get_env_variable
 import matplotlib.pyplot as plt
 import os
 import cv2
+from skimage import color
 from itertools import product
 
 
@@ -166,6 +167,23 @@ def pixel_accuracy(y_true, y_pred):
 
     return sum_true / sum_total
 
+def overlay_prediction(img, prediction):
+    alpha = 0.6
+    color_mask = prediction
+    color_mask[:, :, 0] = 0  # delete the background
+
+    # Convert the input image and color mask to Hue Saturation Value (HSV)
+    # colorspace
+    img_hsv = color.rgb2hsv(img)
+    color_mask_hsv = color.rgb2hsv(color_mask)
+
+    # Replace the hue and saturation of the original image
+    # with that of the color mask
+    img_hsv[..., 0] = color_mask_hsv[..., 0]
+    img_hsv[..., 1] = color_mask_hsv[..., 1] * alpha
+
+    img_masked = color.hsv2rgb(img_hsv)
+    return img_masked
 
 def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     image = np.reshape(img, newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255.
@@ -179,11 +197,12 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     final[:, :, 1] = res == 1
     final[:, :, 2] = res == 2
 
-    fig, axs = plt.subplots(1, 3)
+    fig, axs = plt.subplots(1, 4)
     fig.set_size_inches(20, 6)
     axs[0].imshow(img), axs[0].set_title('Original Image')
     axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
     axs[2].imshow(final), axs[2].set_title('Evaluation mode' if epoch == 0 else 'Pred mask epoch {}'.format(epoch))
+    axs[3].imshow(overlay_prediction(img, final)), axs[3].set_title('Final Result')
     # delete background for overlay
 
     if save:
