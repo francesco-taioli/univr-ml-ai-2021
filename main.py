@@ -32,11 +32,11 @@ from segmentation_models.metrics import IOUScore
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
 NUM_CLASSES = 3
-EPOCHS = 100
+EPOCHS = 50
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 CROSS_VALIDATION = bool(get_env_variable('CROSS_VALIDATION', is_boolean_value=True))
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 # batches per epoch
 BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
 # dictinary for history when doing cross validation
@@ -113,8 +113,8 @@ if not TRAIN_MODEL:
     predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
 else:
 
-    # optimizer = tf.keras.optimizers.Adam()
-    # optimizer = tf.keras.optimizers.SGD()
+    # optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+    # optimizer = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.001)
     optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.001)
     lr_metric = get_lr_metric(optimizer)
 
