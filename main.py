@@ -107,12 +107,14 @@ train_generator = (pair for pair in zip(image_generator, mask_generator))
 # Model Section
 # ##########################################
 if not TRAIN_MODEL:
-    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'LinkNet_288_CL_RMS.h5'),
+    saved_model_name = 'LinkNet_288_CL_RMS.h5'  # should be stored on TRAIN_DATA/saved_model
+    print(f"Start evaluating the model {saved_model_name} ...")
+    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', saved_model_name),
                              compile=False)
-    for index in range(0, 110, 1):
+    for index in range(0, 10):
         predict_mask_and_plot(val_images[index], val_masks[index], saved_model, save=True, index=index)
 else:
-
+    print("Start training the model...")
     # optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
     # optimizer = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.001)
     optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.001)
@@ -130,7 +132,7 @@ else:
     model.summary()
     metrics = [mean_IoU, pixel_accuracy, lr_metric]
 
-    #### MODEL TRAINING
+    # MODEL TRAINING
     tf.config.experimental_run_functions_eagerly(True)
     model.compile(optimizer=optimizer, loss=loss,
                   metrics=metrics
@@ -153,10 +155,9 @@ else:
     ]
 
     if CROSS_VALIDATION:
-        print("Starting cross validation test...")
+        print("Starting cross validation ...")
         all_history = cross_validation(model, imgs, masks, EPOCHS, BPE, image_datagen, mask_datagen, BATCH_SIZE,
                                        metrics, optimizer, loss)
-
     else:
         # Train the model, doing validation at the end of each epoch.
         history = model.fit(
@@ -171,4 +172,5 @@ else:
     if SAVED_MODEL:
         model.save(os.path.join(get_env_variable('TRAIN_DATA'), "saved_model",
                                 f"Model-{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.h5"))
-    predict_mask_and_plot(val_images[13], val_masks[13], model)
+    val_images_index = 13
+    predict_mask_and_plot(val_images[val_images_index], val_masks[val_images_index], model)

@@ -1,8 +1,8 @@
 import math
-
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras import backend as K
 import numpy as np
+
 
 class CyclicLR(Callback):
     """This callback implements a cyclical learning rate policy (CLR).
@@ -89,7 +89,7 @@ class CyclicLR(Callback):
                 self.scale_fn = lambda x: 1.
                 self.scale_mode = 'cycle'
             elif self.mode == 'triangular2':
-                self.scale_fn = lambda x: 1 / (2.**(x - 1))
+                self.scale_fn = lambda x: 1 / (2. ** (x - 1))
                 self.scale_mode = 'cycle'
             elif self.mode == 'exp_range':
                 self.scale_fn = lambda x: gamma ** x
@@ -121,10 +121,10 @@ class CyclicLR(Callback):
         x = np.abs(self.clr_iterations / self.step_size - 2 * cycle + 1)
         if self.scale_mode == 'cycle':
             return self.base_lr + (self.max_lr - self.base_lr) * \
-                np.maximum(0, (1 - x)) * self.scale_fn(cycle)
+                   np.maximum(0, (1 - x)) * self.scale_fn(cycle)
         else:
             return self.base_lr + (self.max_lr - self.base_lr) * \
-                np.maximum(0, (1 - x)) * self.scale_fn(self.clr_iterations)
+                   np.maximum(0, (1 - x)) * self.scale_fn(self.clr_iterations)
 
     def on_train_begin(self, logs={}):
         logs = logs or {}
@@ -153,6 +153,7 @@ class CyclicLR(Callback):
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
         logs['lr'] = K.get_value(self.model.optimizer.lr)
+
 
 class WarmUpLearningRateScheduler(Callback):
 
@@ -201,8 +202,8 @@ class WarmUpLearningRateScheduler(Callback):
         else:
             initial_learning_rate = self.init_lr
             decay_steps = float(self.decay_steps)
-            global_step_recomp = float(self.step-self.warmup_batches)
-            global_step_recomp = global_step_recomp if global_step_recomp<decay_steps else decay_steps
+            global_step_recomp = float(self.step - self.warmup_batches)
+            global_step_recomp = global_step_recomp if global_step_recomp < decay_steps else decay_steps
             completed_fraction = global_step_recomp / decay_steps
             cosine_decayed = 0.5 * (1.0 + math.cos(math.pi * completed_fraction))
 

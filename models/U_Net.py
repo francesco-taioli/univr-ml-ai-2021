@@ -1,6 +1,8 @@
-from tensorflow.keras.layers import Conv2D, Dropout, Conv2DTranspose, BatchNormalization, Activation,  Input, MaxPooling2D
+from tensorflow.keras.layers import Conv2D, Dropout, Conv2DTranspose, BatchNormalization, Activation, Input, \
+    MaxPooling2D
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import  concatenate
+from tensorflow.keras.layers import concatenate
+
 
 def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"):
     x = Conv2D(filters=nfilters, kernel_size=(size, size), padding=padding, kernel_initializer=initializer)(
@@ -12,11 +14,13 @@ def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"
     x = Activation("relu")(x)
     return x
 
+
 def deconv_block(tensor, residual, nfilters, size=3, padding='same', strides=(2, 2)):
     y = Conv2DTranspose(nfilters, kernel_size=(size, size), strides=strides, padding=padding)(tensor)
     y = concatenate([y, residual], axis=3)
     y = conv_block(y, nfilters)
     return y
+
 
 def Unet(img_height, img_width, nclasses=3, filters=64):
     # down

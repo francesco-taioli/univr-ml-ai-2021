@@ -6,6 +6,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
+
 def augment(image, prob=0.2):
     """
     :param image: rgb image (dtype uint8)
@@ -17,18 +18,20 @@ def augment(image, prob=0.2):
         A.RandomGamma(p=prob),
         A.HueSaturationValue(p=prob),
         A.GaussNoise(p=prob)
-        #A.CLAHE(p=prob)
+        # A.CLAHE(p=prob)
     ])
 
     transformed = transform(image=image)
     return transformed["image"]
 
+
 # Showing how the augmentation is done (5 images augmented with their original counterparts
 # if you want to see an example, run python augmentation.py
+# you have to first run the main.py in order to generate the set_imgs file
 if __name__ == "__main__":
 
     with open(os.path.join('dataset', 'set_imgs'), 'rb') as imgs:
-            dataset = pickle.load(imgs)
+        dataset = pickle.load(imgs)
 
     rows = 2
     columns = 5

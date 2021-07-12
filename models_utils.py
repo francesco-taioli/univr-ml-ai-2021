@@ -1,14 +1,11 @@
+import os
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras import layers
 import tensorflow.keras.backend as K
-from utils import get_env_variable
-import matplotlib.pyplot as plt
-import os
-import cv2
 from skimage import color
-from itertools import product
+from tensorflow.keras import layers
+from utils import get_env_variable
 
 
 def tversky_loss(y_true, y_pred):
@@ -26,8 +23,10 @@ def tversky_loss(y_true, y_pred):
 
     return Ncl - T
 
+
 def pixel_wise_loss():
     pos_weight = tf.constant([[0.1, 2.0, 2.0]])
+
     def pwl(y_true, y_pred):
         loss = tf.nn.weighted_cross_entropy_with_logits(
             y_true,
@@ -35,80 +34,23 @@ def pixel_wise_loss():
             pos_weight,
             name=None
         )
-        return K.mean(loss,axis=-1)
+        return K.mean(loss, axis=-1)
+
     return pwl
+
 
 def weighted_categorical_crossentropy():
     weights = [1.0, 2.0, 2.0]
+
     def wcce(y_true, y_pred):
         Kweights = K.constant(weights)
         # if not K.is_tensor(y_pred):
         y_pred = K.constant(y_pred)
         y_true = K.cast(y_true, y_pred.dtype)
         return K.categorical_crossentropy(y_true, y_pred) * K.sum(y_true * Kweights, axis=-1)
+
     return wcce
 
-
-
-
-def get_model(img_size, num_classes):
-    # https://keras.io/examples/vision/oxford_pets_image_segmentation/#what-does-one-input-image-and-corresponding-segmentation-mask-look-like
-
-    inputs = tf.keras.Input(shape=img_size + (3,))
-
-    ### [First half of the network: downsampling inputs] ###
-
-    # Entry block
-    x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-
-    previous_block_activation = x  # Set aside residual
-
-    # Blocks 1, 2, 3 are identical apart from the feature depth.
-    for filters in [128, 256, 528]:
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-
-        # Project residual
-        residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
-            previous_block_activation
-        )
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    ### [Second half of the network: upsampling inputs] ###
-
-    for filters in [528, 256, 128, 32]:
-        x = layers.Activation("relu")(x)
-        x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.UpSampling2D(2)(x)
-
-        # Project residual
-        residual = layers.UpSampling2D(2)(previous_block_activation)
-        residual = layers.Conv2D(filters, 1, padding="same")(residual)
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    # Add a per-pixel classification layer
-    outputs = layers.Conv2D(num_classes, (1, 1), activation='softmax', padding='same')(x)
-
-    # Define the model
-    model = tf.keras.Model(inputs, outputs)
-    return model
 
 
 def mean_IoU(y_true, y_pred):
@@ -167,7 +109,11 @@ def pixel_accuracy(y_true, y_pred):
 
     return sum_true / sum_total
 
+
 def overlay_prediction(img, prediction):
+    """
+    return the image with the predicted segmentation parts overlayed on it
+    """
     alpha = 0.6
     color_mask = prediction
     color_mask[:, :, 0] = 0  # delete the background
@@ -184,6 +130,7 @@ def overlay_prediction(img, prediction):
 
     img_masked = color.hsv2rgb(img_hsv)
     return img_masked
+
 
 def predict_mask_and_plot(img, mask, model, epoch=0, save=False, index=-1):
     image = np.reshape(img, newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255.
@@ -202,10 +149,6 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False, index=-1):
     axs[0].imshow(img), axs[0].set_title('Original Image')
     axs[1].imshow(overlay_prediction(img, mask * 255)), axs[1].set_title('True mask overlay')
     axs[2].imshow(overlay_prediction(img, final)), axs[2].set_title('Final result overlay')
-    # axs[3].imshow(mask * 255), axs[3].set_title('True Mask')
-    # axs[4].imshow(final), axs[4].set_title('Evaluation mode' if epoch == 0 else 'Pred mask epoch {}'.format(epoch))
-
-    # delete background for overlay
 
     if save and index == -1:
         plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', 'epoch{}.png'.format(epoch)))
@@ -214,11 +157,13 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False, index=-1):
     else:
         plt.show()
 
+
 def get_lr_metric(optimizer):
     def lr(y_true, y_pred):
         return optimizer.lr
 
     return lr
+
 
 class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
 
@@ -228,6 +173,3 @@ class Show_Intermediate_Pred(tf.keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         predict_mask_and_plot(self.image, self.mask, self.model, epoch, save=True)
-
-
-

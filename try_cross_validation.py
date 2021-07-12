@@ -7,10 +7,12 @@ from learning_rate_schedulers import CyclicLR
 from utils import get_env_variable
 import numpy as np
 
-def cross_validation(model, images, masks, EPOCHS, BPE, image_datagen, mask_datagen, BATCH_SIZE, metrics, optimizer, loss):
+
+def cross_validation(model, images, masks, EPOCHS, BPE, image_datagen, mask_datagen, BATCH_SIZE, metrics, optimizer,
+                     loss):
     all_history = {}
     fold = 1
-    kfold = KFold(n_splits=3, shuffle=True ) # split images and masks obtaining n_splits
+    kfold = KFold(n_splits=3, shuffle=True)  # split images and masks obtaining n_splits
     Path(os.path.join(get_env_variable('TRAIN_DATA'), 'logs', 'folds')).mkdir(parents=True, exist_ok=True)
     mean_meanIoU = 0.0
 
@@ -21,7 +23,6 @@ def cross_validation(model, images, masks, EPOCHS, BPE, image_datagen, mask_data
                   )
 
     for train, val in kfold.split(images, masks):
-
         model.load_weights("temp.h5")
 
         image_generator = image_datagen.flow(images[train], seed=1, batch_size=BATCH_SIZE)
@@ -41,7 +42,7 @@ def cross_validation(model, images, masks, EPOCHS, BPE, image_datagen, mask_data
             CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size=BPE * 5),
             # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
             tf.keras.callbacks.TensorBoard(log_dir=os.path.join(get_env_variable('TRAIN_DATA'), 'logs', 'folds',
-                                                                f"fold-{fold}"),  write_graph=False)
+                                                                f"fold-{fold}"), write_graph=False)
         ]
 
         history = model.fit(
