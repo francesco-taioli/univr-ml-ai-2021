@@ -29,18 +29,16 @@ from segmentation_models.metrics import IOUScore
 # ##########################################
 # Settings
 # ##########################################
+NUM_CLASSES = 3
 WIDTH = int(get_env_variable('WIDTH'))
 HEIGHT = int(get_env_variable('HEIGHT'))
-NUM_CLASSES = 3
-EPOCHS = 50
+EPOCHS = int(get_env_variable('EPOCHS'))
 TRAIN_MODEL = bool(get_env_variable('TRAIN_MODEL', is_boolean_value=True))
 SAVED_MODEL = bool(get_env_variable('SAVED_MODEL', is_boolean_value=True))
 CROSS_VALIDATION = bool(get_env_variable('CROSS_VALIDATION', is_boolean_value=True))
-BATCH_SIZE = 4
-# batches per epoch
-BPE = int(get_env_variable('BATCHES_PER_EPOCH'))
-# dictinary for history when doing cross validation
-all_history = {}
+BATCH_SIZE = int(get_env_variable('BATCH_SIZE'))
+BPE = int(get_env_variable('BATCHES_PER_EPOCH'))  # batches per epoch
+
 
 # ##########################################
 # download dataset and prepare it
@@ -78,6 +76,7 @@ axs[2].imshow(train_masks[0, :, :, 1]), axs[2].set_title('blood cell')
 axs[3].imshow(train_masks[0, :, :, 2]), axs[3].set_title('bacteria')
 axs[4].imshow(train_masks[0, :, :, 0]), axs[4].set_title('Background')
 plt.show()
+
 # ##########################################
 # Data Augmentation
 # ##########################################
