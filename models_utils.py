@@ -185,7 +185,7 @@ def overlay_prediction(img, prediction):
     img_masked = color.hsv2rgb(img_hsv)
     return img_masked
 
-def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
+def predict_mask_and_plot(img, mask, model, epoch=0, save=False, index=-1):
     image = np.reshape(img, newshape=(1, img.shape[0], img.shape[1], img.shape[2]))  # / 255.
     WIDTH = int(get_env_variable('WIDTH'))
     HEIGHT = int(get_env_variable('HEIGHT'))
@@ -197,16 +197,20 @@ def predict_mask_and_plot(img, mask, model, epoch=0, save=False):
     final[:, :, 1] = res == 1
     final[:, :, 2] = res == 2
 
-    fig, axs = plt.subplots(1, 4)
+    fig, axs = plt.subplots(1, 3)
     fig.set_size_inches(20, 6)
     axs[0].imshow(img), axs[0].set_title('Original Image')
-    axs[1].imshow(mask * 255), axs[1].set_title('True Mask')
-    axs[2].imshow(final), axs[2].set_title('Evaluation mode' if epoch == 0 else 'Pred mask epoch {}'.format(epoch))
-    axs[3].imshow(overlay_prediction(img, final)), axs[3].set_title('Final Result')
+    axs[1].imshow(overlay_prediction(img, mask * 255)), axs[1].set_title('True mask overlay')
+    axs[2].imshow(overlay_prediction(img, final)), axs[2].set_title('Final result overlay')
+    # axs[3].imshow(mask * 255), axs[3].set_title('True Mask')
+    # axs[4].imshow(final), axs[4].set_title('Evaluation mode' if epoch == 0 else 'Pred mask epoch {}'.format(epoch))
+
     # delete background for overlay
 
-    if save:
+    if save and index == -1:
         plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', 'epoch{}.png'.format(epoch)))
+    elif save and index != -1:
+        plt.savefig(os.path.join(get_env_variable('TRAIN_DATA'), 'images', '{}.png'.format(index)))
     else:
         plt.show()
 

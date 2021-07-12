@@ -107,10 +107,10 @@ train_generator = (pair for pair in zip(image_generator, mask_generator))
 # Model Section
 # ##########################################
 if not TRAIN_MODEL:
-    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'bact_seg_10_epoch_v1.h5'),
+    saved_model = load_model(os.path.join(get_env_variable('TRAIN_DATA'), 'saved_model', 'LinkNet_288_CL_RMS.h5'),
                              compile=False)
-    image_index = 14
-    predict_mask_and_plot(val_images[image_index], val_masks[image_index], saved_model)
+    for index in range(0, 110, 1):
+        predict_mask_and_plot(val_images[index], val_masks[index], saved_model, save=True, index=index)
 else:
 
     # optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
