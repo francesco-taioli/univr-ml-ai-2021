@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 from learning_rate_schedulers import CyclicLR, WarmUpLearningRateScheduler
 from sklearn.model_selection import train_test_split
-from try_cross_validation import cross_validation
+from cross_validation import cross_validation
 # ##########################################
 # Models
 # ##########################################
