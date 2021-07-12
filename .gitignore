@@ -1,3 +1,4 @@
 .env
 .idea
 /temp.h5
+__pycache__
