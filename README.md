@@ -1,4 +1,5 @@
 # Univr Ml & Ai
+ Dataset - https://www.kaggle.com/longnguyen2306/bacteria-detection-with-darkfield-microscopy 
 
 # Setup
 
@@ -10,6 +11,10 @@
 # Report
 In the **pdf_report** folder you can find a detail report for the project. We encourage you to take a look
 
+#  Result
+![](pdf_report/images/res1.png)
+![](pdf_report/images/res2.png)
+
 # Tensorboard
 
 python -m tensorboard.main --logdir=S:\train_data\logs --host=127.0.0.1 --port 6006 // change logdir based on env
@@ -20,3 +25,5 @@ variable TRAIN_DATA
 - kaggle
 - albumentations
 - segmentation model - pip install -U segmentation-models
+
+
