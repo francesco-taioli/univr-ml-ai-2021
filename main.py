@@ -126,11 +126,11 @@ else:
     # loss = CategoricalCELoss(class_weights=[0.1, 5.0, 10.0])
     # loss = pixel_wise_loss()
 
-    # model = Seg_Net((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES)
+    # model = Seg_Net((HEIGHT, WIDTH, 3), NUM_CLASSES)
     # model = Unet(HEIGHT, WIDTH, NUM_CLASSES)
-    # model = PSP_Net((HEIGHT, WIDTH, NUM_CLASSES))
-    model = Link_Net((HEIGHT, WIDTH, NUM_CLASSES))
-    # model = Fcn8((HEIGHT, WIDTH, NUM_CLASSES), NUM_CLASSES).get_model()
+    # model = PSP_Net((HEIGHT, WIDTH, 3))
+    model = Link_Net((HEIGHT, WIDTH, 3))
+    # model = Fcn8((HEIGHT, WIDTH, 3), NUM_CLASSES).get_model()
     model.summary()
     metrics = [mean_IoU, pixel_accuracy, lr_metric]
 
@@ -148,12 +148,12 @@ else:
     callbacks = [
         # Show_Intermediate_Pred(val_images[13], val_masks[13]),
         # tf.keras.callbacks.ModelCheckpoint("bacteria.h5", save_best_only=True, monitor="val_accuracy"),
-        tf.keras.callbacks.EarlyStopping(monitor='pixel_accuracy', patience=20, min_delta=0.001,
+        tf.keras.callbacks.EarlyStopping(monitor='val_mean_IoU', patience=20, min_delta=0.001,
                                          restore_best_weights=True),
-        # tf.keras.callbacks.ReduceLROnPlateau(monitor='pixel_accuracy', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
+        # tf.keras.callbacks.ReduceLROnPlateau(monitor='val_mean_IoU', factor=0.8, patience=5, min_lr=0.001, mode='auto'),
         CyclicLR(base_lr=0.001, max_lr=0.01, mode='triangular2', step_size=BPE * 5),
         # WarmUpLearningRateScheduler(warmup_batches=BPE * 10, init_lr=0.01, verbose=0, decay_steps=BPE * 40, alpha=0.001),
-        Tensorboard
+        # Tensorboard
     ]
 
     if CROSS_VALIDATION:

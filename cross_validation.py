@@ -7,7 +7,7 @@ from learning_rate_schedulers import CyclicLR
 from utils import get_env_variable
 import numpy as np
 
-
+# leave K-Out cross validation
 def cross_validation(model, images, masks, EPOCHS, BPE, image_datagen, mask_datagen, BATCH_SIZE, metrics, optimizer,
                      loss):
     all_history = {}
